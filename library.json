@@ -1,0 +1,25 @@
+{
+    "authors": [
+        {
+            "maintainer": true,
+            "name": "BlackCoffee",
+            "url": "https://github.com/blackcoffeexbt"
+        }
+    ],
+    "description": "Nostr Client for Arduino",
+    "export": {
+        "exclude": [
+            "tests"
+        ]
+    },
+    "frameworks": "arduino",
+    "keywords": "web, client, websocket, nostr",
+    "license": "MIT",
+    "name": "Nostr",
+    "platforms": "espressif32",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/lnbits/arduino-nostr"
+    },
+    "version": "0.0.1"
+}
