@@ -1,5 +1,5 @@
 /*
-  NostrRelayManager.h - Arduino library for Nostr.
+  NostrRelayManager - Arduino library for Nostr.
   Created by Black Coffee <bc@omg.lol>, March 29th 2023
   Released under MIT License
 */
@@ -7,8 +7,10 @@
 #include <NostrEvent.h>
 #include <WebSocketsClient.h>
 
-
-NostrRelayManager::NostrRelayManager() {
+NostrRelayManager::NostrRelayManager() : 
+    lastBroadcastAttempt(0),
+    minRelaysTimeout(15000),
+    minRelays(1) {
 }
 
 void NostrRelayManager::setEventCallback(const std::string& key, EventCallbackFn callback) {
@@ -42,13 +44,13 @@ void NostrRelayManager::setRelays(const char *const new_relays[], int size) {
 }
 
 /**
- * @brief Keep all relays active
- * 
- */
+* @brief Keep all relays active
+* 
+*/
 void NostrRelayManager::loop() {
-  for (int i = 0; i < relay_count; i++) {
-    _webSocketClients[i].loop();
-  }
+    for (int i = 0; i < relay_count; i++) {
+        _webSocketClients[i].loop();
+    }
 }
 
 /**
@@ -56,15 +58,54 @@ void NostrRelayManager::loop() {
  * 
  */
 void NostrRelayManager::broadcastEvents() {
-  if (!m_queue.isEmpty() && isConnected) {
-    Serial.println("Broadcasting events");
+
+  unsigned long currentMillis = millis();
+  if (m_queue.isEmpty()) {
+    return;
   }
-  while (!m_queue.isEmpty() && isConnected) {
-    const char *item = m_queue.dequeue();
-    String message = "Processing item: " + String(item);
-    Serial.println(message);
-    broadcastEvent(String(item));
+
+  if (connectedRelayCount() >= minRelays && currentMillis - lastBroadcastAttempt <= minRelaysTimeout) {
+    // Broadcast all queued events to connected relays
+    while (!m_queue.isEmpty()) {
+      const char *item = m_queue.dequeue();
+      Serial.printf("Broadcasting event: %s\n", item);
+        broadcastEvent(String(item));
+    }
+
+    lastBroadcastAttempt = currentMillis;
+  } else if (currentMillis - lastBroadcastAttempt > minRelaysTimeout) {
+    // Broadcast all queued events to all relays, regardless of whether they're connected
+    while (!m_queue.isEmpty()) {
+      const char *item = m_queue.dequeue();
+      Serial.printf("Broadcasting event: %s\n", item);
+      broadcastEvent(String(item));
+    }
+
+    lastBroadcastAttempt = currentMillis;
   }
+}
+
+int NostrRelayManager::connectedRelayCount() {
+    int count = 0;
+    for (int i = 0; i < relay_count; i++) {
+        if (_webSocketClients[i].isConnected()) {
+            count++;
+        }
+    }
+    return count;
+}
+
+/**
+ * @brief set minimum number of relays and a timeout for this minimum threshold.
+ * After this timeout is reached, the message will be broadcast regardless of the 
+ * number of connected relays
+ * 
+ * @param minRelays 
+ * @param minRelaysTimeout in milliseconds
+ */
+void NostrRelayManager::setMinRelaysAndTimeout(int minRelays, unsigned long minRelaysTimeout) {
+    this->minRelays = minRelays;
+    this->minRelaysTimeout = minRelaysTimeout;
 }
 
 /**
@@ -83,98 +124,75 @@ void NostrRelayManager::printRelay(int index) const {
 /**
  * @brief Connect to all specified relays
  * 
- * @param callback an optional callback to be called when a websocket event is received
+ * @param callback 
  */
 void NostrRelayManager::connect(std::function<void(WStype_t, uint8_t*, size_t)> callback) {
-  // Initialize WebSocket connections
-  for (int i = 0; i < relay_count; i++) {
-    _webSocketClients[i].beginSSL(relays[i], 443);
-    _webSocketClients[i].onEvent([this, callback](WStype_t type, uint8_t* payload, size_t length) {
-      this->_webSocketEvent(type, payload, length);
-      if (callback != nullptr) {
-        callback(type, payload, length);
-      }
-    });
-  }
-  delay(500);
+    // Initialize WebSocket connections
+    for (int i = 0; i < relay_count; i++) {
+        _webSocketClients[i].beginSSL(relays[i], 443);
+        _webSocketClients[i].onEvent([this, callback, i](WStype_t type, uint8_t* payload, size_t length) {
+            this->_webSocketEvent(type, payload, length, i);
+
+            if (callback != nullptr) {
+                callback(type, payload, length);
+            }
+        });
+    }
+    delay(500);
 }
 
-/**
- * @brief Disconnect from all websockets
- * 
- */
 void NostrRelayManager::disconnect() {
-  for (int i = 0; i < relay_count; i++) {
-    _webSocketClients[i].disconnect();
-    delay(1000);
-  }
+    for (int i = 0; i < relay_count; i++) {
+        _webSocketClients[i].disconnect();
+        delay(1000);
+    }
 }
 
-/**
- * @brief broadcast a serialised event object to all relays
- * 
- * @param serialisedEventJson 
- */
-void NostrRelayManager::broadcastEvent(String serialisedEventJson) {
-  for (int i = 0; i < relay_count; i++) {
-    _webSocketClients[i].sendTXT(serialisedEventJson);
-    delay(1000);
-  }
+void NostrRelayManager::broadcastEvent(String serializedEventJson) {
+    for (int i = 0; i < relay_count; i++) {
+        _webSocketClients[i].sendTXT(serializedEventJson);
+        delay(1000);
+    }
 }
 
-/**
- * @brief Get a 64 character long string to be used when subscribing to events and updates
- * 
- * @return String 
- */
 String NostrRelayManager::getNewSubscriptionId() {
-  String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  String result = "";
-  int length = 64;
-  for (int i = 0; i < length; i++) {
-    int randomIndex = random(chars.length());
-    result += chars[randomIndex];
-  }
-  return result;
+    String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    String result = "";
+    int length = 64;
+    for (int i = 0; i < length; i++) {
+        int randomIndex = random(chars.length());
+        result += chars[randomIndex];
+    }
+return result;
 }
 
-/**
- * @brief The websocket event listener
- * 
- * @param type 
- * @param payload 
- * @param length 
- */
-void NostrRelayManager::_webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
+void NostrRelayManager::_webSocketEvent(WStype_t type, uint8_t* payload, size_t length, int relayIndex) {
+    Serial.println("Message from relay index:" + String(relayIndex));
   switch (type) {
     case WStype_DISCONNECTED:
-      Serial.printf("[WSc] Disconnected.\n");
-    break;
+        Serial.printf("[WSc] Disconnected from relay: %s\n", ".");
+        break;
     case WStype_CONNECTED:
-    {
-      Serial.printf("[WSc] Connected.\n");
-      isConnected = true;
-    }
+        Serial.printf("[WSc] Connected to relay: %s\n", ".");
     break;
     case WStype_TEXT:
     {
-      Serial.printf("[WSc]: Received text: %s\n", payload);
-      const char *payloadStr = (char *)payload;
+        Serial.printf("[WSc]: Received text from relay %s: %s\n", ".", payload);
+        const char *payloadStr = (char *)payload;
 
-      if(String(payloadStr).indexOf("\"OK\"") > 0) {
-        performEventAction("ok", payloadStr);
-      }
-      else if(String(payloadStr).indexOf("\"EVENT\"") > 0 && String(payloadStr).indexOf("\"kind\":1") > 0) {
-        performEventAction("nip01", payloadStr);
-      }
-      else if(String(payloadStr).indexOf("\"EVENT\"") > 0 && String(payloadStr).indexOf("\"kind\":4") > 0) {
-        performEventAction("nip04", payloadStr);
-      }
+        if (String(payloadStr).indexOf("\"OK\"") > 0) {
+            performEventAction("ok", payloadStr);
+        } else if (String(payloadStr).indexOf("\"EVENT\"") > 0 && String(payloadStr).indexOf("\"kind\":1") > 0) {
+            performEventAction("nip01", payloadStr);
+        } else if (String(payloadStr).indexOf("\"EVENT\"") > 0 && String(payloadStr).indexOf("\"kind\":4") > 0) {
+            performEventAction("nip04", payloadStr);
+        }
+        break;
     }
-    break;
     case WStype_ERROR:
-      Serial.printf("[WSc] Error: %s\n", payload);
+        Serial.printf("[WSc] Error from relay %s: %s\n", ".", payload);
+        break;
     default:
-    break;
+        break;
   }
 }

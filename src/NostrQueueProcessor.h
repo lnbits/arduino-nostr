@@ -1,3 +1,8 @@
+/*
+  NostrQueueProcessor - Arduino library for Nostr.
+  Created by Black Coffee <bc@omg.lol>, March 29th 2023
+  Released under MIT License
+*/
 #pragma once
 #include <array>
 #include <string>
