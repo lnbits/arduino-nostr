@@ -18,8 +18,8 @@ const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 0;
 const int   daylightOffset_sec = 3600;
 
-char const *nsecHex = "<SENDER PRIVATE KEY IN HEX FORMAT"; // sender private key in hex e.g. bdd19cecdXXXXXXXXXXXXXXXXXXXXXXXXXX
-char const *npubHex = "<SENDER PUBLIC KEY IN HEX FORMAT"; // sender public key in hex e.g. d0bfc94bd4324f7df2a7601c4177209828047c4d3904d64009a3c67fb5d5e7ca
+char const *nsecHex = "<SENDER PRIVATE KEY IN HEX FORMAT>"; // sender private key in hex e.g. bdd19cecdXXXXXXXXXXXXXXXXXXXXXXXXXX
+char const *npubHex = "<SENDER PUBLIC KEY IN HEX FORMAT>"; // sender public key in hex e.g. d0bfc94bd4324f7df2a7601c4177209828047c4d3904d64009a3c67fb5d5e7ca
 // BC
 char const *testRecipientPubKeyHex = "<RECIPIENT PUB KEY IN HEX FORMAT>"; // e.g. // sender public key 683211bd155c7b764e4b99ba263a151d81209be7a566a2bb1971dc1bbd3b715e
 
