@@ -7,16 +7,32 @@
 #include <NostrEvent.h>
 #include <WebSocketsClient.h>
 
+/**
+ * @brief Construct a new Nostr Relay Manager:: Nostr Relay Manager object
+ * 
+ */
 NostrRelayManager::NostrRelayManager() : 
     lastBroadcastAttempt(0),
     minRelaysTimeout(15000),
     minRelays(1) {
 }
 
+/**
+ * @brief Specify a callback for a relay event type
+ * 
+ * @param key Can be "ok", "nip01", "nip04"
+ * @param callback 
+ */
 void NostrRelayManager::setEventCallback(const std::string& key, EventCallbackFn callback) {
     m_callbacks[key] = callback;
 }
 
+/**
+ * @brief Run a specified event callback
+ * 
+ * @param key Can be "ok", "nip01", "nip04"
+ * @param payload 
+ */
 void NostrRelayManager::performEventAction(const std::string& key, const char* payload) {
     auto it = m_callbacks.find(key);
     if (it != m_callbacks.end()) {
@@ -24,14 +40,31 @@ void NostrRelayManager::performEventAction(const std::string& key, const char* p
     }
 }
 
+/**
+ * @brief Add a relay message to the queue
+ * 
+ * @param item 
+ */
 void NostrRelayManager::enqueueMessage(const char item[NostrQueueProcessor::MAX_ITEM_SIZE]) {
     m_queue.enqueue(item);
 }
 
+/**
+ * @brief Are there messages in the message queue?
+ * 
+ * @return true 
+ * @return false 
+ */
 bool NostrRelayManager::hasEnqueuedMessages() {
     return !m_queue.isEmpty();
 }
 
+/**
+ * @brief Subscribe to a relay event. Currently a proxy for broadcast
+ * TODO: Add parameters for easier subscriptions
+ * 
+ * @param subscriptionJson 
+ */
 void NostrRelayManager::subscribe(String subscriptionJson) {
   broadcastEvent(subscriptionJson);
 }
@@ -89,6 +122,11 @@ void NostrRelayManager::broadcastEvents() {
   }
 }
 
+/**
+ * @brief How many relays are currently connected?
+ * 
+ * @return int 
+ */
 int NostrRelayManager::connectedRelayCount() {
     int count = 0;
     for (int i = 0; i < relay_count; i++) {
@@ -145,6 +183,10 @@ void NostrRelayManager::connect(std::function<void(WStype_t, uint8_t*, size_t)> 
     delay(500);
 }
 
+/**
+ * @brief Disconnect from all relays
+ * 
+ */
 void NostrRelayManager::disconnect() {
     for (int i = 0; i < relay_count; i++) {
         _webSocketClients[i].disconnect();
@@ -152,6 +194,11 @@ void NostrRelayManager::disconnect() {
     }
 }
 
+/**
+ * @brief Broadcast a serialisedEvent JSON to all relays
+ * 
+ * @param serializedEventJson 
+ */
 void NostrRelayManager::broadcastEvent(String serializedEventJson) {
     for (int i = 0; i < relay_count; i++) {
         _webSocketClients[i].sendTXT(serializedEventJson);
@@ -159,6 +206,11 @@ void NostrRelayManager::broadcastEvent(String serializedEventJson) {
     }
 }
 
+/**
+ * @brief Generate a random alphanumeric string to be used for subscription IDs
+ * 
+ * @return String 
+ */
 String NostrRelayManager::getNewSubscriptionId() {
     String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     String result = "";
@@ -170,6 +222,14 @@ String NostrRelayManager::getNewSubscriptionId() {
 return result;
 }
 
+/**
+ * @brief Generic websocket event callback
+ * 
+ * @param type 
+ * @param payload 
+ * @param length 
+ * @param relayIndex 
+ */
 void NostrRelayManager::_webSocketEvent(WStype_t type, uint8_t* payload, size_t length, int relayIndex) {
     Serial.println("Message from relay index:" + String(relayIndex));
   switch (type) {

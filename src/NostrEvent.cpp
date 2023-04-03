@@ -19,9 +19,11 @@
 #include <esp_random.h>
 #include <esp_wifi.h>
 
-NostrEvent::NostrEvent() {
-
-}
+/**
+ * @brief Construct a new Nostr Event:: Nostr Event object
+ * 
+ */
+NostrEvent::NostrEvent() {}
 
 /**
  * @brief Write debug data to the Serial output
@@ -38,7 +40,7 @@ void NostrEvent::_logToSerialWithTitle(String title, String message) {
 }
 
 /**
- * @brief Enable or disable verbose logging?
+ * @brief Enable or disable verbose logging
  * 
  * @param loggingEnabled 
  */
@@ -121,6 +123,13 @@ String NostrEvent::getNote(char const *privateKeyHex, char const *pubKeyHex, uns
     return serialisedEventData;
 }
 
+/**
+ * @brief Decrypt a DM event
+ * 
+ * @param privateKeyHex The account private key in hex format
+ * @param serialisedJson the serialised JSON of the entire event from the relay
+ * @return String 
+ */
 String NostrEvent::decryptDm(const char *privateKeyHex, String serialisedJson) {
     // get the content
     StaticJsonDocument<2048> doc;
