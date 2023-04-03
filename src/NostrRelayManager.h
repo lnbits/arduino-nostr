@@ -30,6 +30,7 @@ class NostrRelayManager
     void performEventAction(const std::string& key, const char *payload);
 
     void enqueueMessage(const char item[NostrQueueProcessor::MAX_ITEM_SIZE]);
+    bool hasEnqueuedMessages();
 
     void setRelays(const char *const new_messages[], int size);
     void printRelay(int index) const;

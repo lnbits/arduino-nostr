@@ -28,6 +28,10 @@ void NostrRelayManager::enqueueMessage(const char item[NostrQueueProcessor::MAX_
     m_queue.enqueue(item);
 }
 
+bool NostrRelayManager::hasEnqueuedMessages() {
+    return !m_queue.isEmpty();
+}
+
 void NostrRelayManager::subscribe(String subscriptionJson) {
   broadcastEvent(subscriptionJson);
 }
