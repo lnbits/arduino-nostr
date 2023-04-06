@@ -6,6 +6,7 @@
 #include <NostrRelayManager.h>
 #include <NostrEvent.h>
 #include <WebSocketsClient.h>
+#include "ArduinoJson.h"
 
 /**
  * @brief Construct a new Nostr Relay Manager:: Nostr Relay Manager object
@@ -60,13 +61,17 @@ bool NostrRelayManager::hasEnqueuedMessages() {
 }
 
 /**
- * @brief Subscribe to a relay event. Currently a proxy for broadcast
- * TODO: Add parameters for easier subscriptions
+ * @brief Queue an event request message to be sent to relays
  * 
- * @param subscriptionJson 
+ * @param options A NostrRequestOptions object with arguments for the requested event(s)
  */
-void NostrRelayManager::subscribe(String subscriptionJson) {
-  broadcastEvent(subscriptionJson);
+void NostrRelayManager::requestEvents(const NostrRequestOptions* options) {
+    // now put the json within a REQ to be sent to the relays
+    String serialisedJson = "[\"REQ\", \"" + getNewSubscriptionId() + "\"," + options->toJson() + "]";
+    Serial.println(F("REQ looks like this"));
+    Serial.println(serialisedJson);
+
+    enqueueMessage(serialisedJson.c_str());
 }
 
 /**
