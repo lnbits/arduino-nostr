@@ -110,7 +110,7 @@ void NostrRelayManager::broadcastEvents() {
     }
 
     lastBroadcastAttempt = currentMillis;
-  } else if (currentMillis - lastBroadcastAttempt > minRelaysTimeout) {
+  } else if (currentMillis - lastBroadcastAttempt > minRelaysTimeout && connectedRelayCount() > 0) {
     // Broadcast all queued events to all relays, regardless of whether they're connected
     while (!m_queue.isEmpty()) {
       const char *item = m_queue.dequeue();
