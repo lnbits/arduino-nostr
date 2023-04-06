@@ -10,6 +10,7 @@
 #include <WebSocketsClient.h>
 #include <NostrQueueProcessor.h>
 #include <NostrEvent.h>
+#include "NostrRequestOptions.h"
 #include <string>
 #include <map>
 #include <functional>
@@ -25,6 +26,7 @@ class NostrRelayManager
     void setMinRelaysAndTimeout(int minRelays, unsigned long minRelaysTimeout);
 
     void subscribe(String subscriptionJson);
+    void requestEvents(const NostrRequestOptions* options);
     void setEventCallback(const std::string& key, EventCallbackFn callback);
 
     void performEventAction(const std::string& key, const char *payload);
