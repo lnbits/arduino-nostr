@@ -9,6 +9,7 @@ This library gives the ability to interact with Nostr relays with Arduino microc
 + NostrEvent - For creation of NIP01 and NIP04 notes
 + NostrRelayManager - For management of multiple relays and message broadcasting and receiving
 + NostrQueueProcessor - For queueing up relay messages
++ NostrRequestOptions - For creating a request object that can be sent to relays
 
 + Send notes and private messages with support for NIP01 kind 1 and NIP04 kind 4.
 + Receieve and decrypt NIP04 messages.
