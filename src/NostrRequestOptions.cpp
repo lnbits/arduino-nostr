@@ -1,5 +1,25 @@
 #include "NostrRequestOptions.h"
 
+/**
+ * @brief Constructs a new NostrRequestOptions object with default values.
+ *
+ * Initializes the NostrRequestOptions object with default values for all its members.
+ * This constructor takes no arguments.
+ *
+ * @param ids Pointer to an array of ids, defaults to nullptr.
+ * @param ids_count Number of ids in the ids array, defaults to 0.
+ * @param authors Pointer to an array of authors, defaults to nullptr.
+ * @param authors_count Number of authors in the authors array, defaults to 0.
+ * @param kinds Pointer to an array of kinds, defaults to nullptr.
+ * @param kinds_count Number of kinds in the kinds array, defaults to 0.
+ * @param e Pointer to an array of events, defaults to nullptr.
+ * @param e_count Number of events in the e array, defaults to 0.
+ * @param p Pointer to an array of pointers, defaults to nullptr.
+ * @param p_count Number of pointers in the p array, defaults to 0.
+ * @param since The starting timestamp for the request, defaults to -1.
+ * @param until The ending timestamp for the request, defaults to -1.
+ * @param limit The maximum number of results to return, defaults to -1.
+ */
 NostrRequestOptions::NostrRequestOptions()
     : ids(nullptr),
       ids_count(0),
