@@ -5,6 +5,7 @@
 `class `[`NostrEvent`](#class_nostr_event) | 
 `class `[`NostrQueueProcessor`](#class_nostr_queue_processor) | 
 `class `[`NostrRelayManager`](#class_nostr_relay_manager) | 
+`class `[`NostrRequestOptions`](#class_nostr_request_options) | 
 `struct `[`AES_ctx`](#struct_a_e_s__ctx) | 
 
 # class `NostrEvent` 
@@ -146,7 +147,8 @@ const char*
 --------------------------------|---------------------------------------------
 `public  `[`NostrRelayManager`](#class_nostr_relay_manager_1af9ab52c07cd66b3839775b46af4fe4c0)`()` | Construct a new Nostr Relay Manager:: Nostr Relay Manager object.
 `public void `[`setMinRelaysAndTimeout`](#class_nostr_relay_manager_1a4fc76b81c5086e63157b02687491fda9)`(int minRelays,unsigned long minRelaysTimeout)` | set minimum number of relays and a timeout for this minimum threshold. After this timeout is reached, the message will be broadcast regardless of the number of connected relays
-`public void `[`subscribe`](#class_nostr_relay_manager_1a0e3ea54ae22c0420b16b9d8a68464e92)`(String subscriptionJson)` | Subscribe to a relay event. Currently a proxy for broadcast TODO: Add parameters for easier subscriptions.
+`public void `[`subscribe`](#class_nostr_relay_manager_1a0e3ea54ae22c0420b16b9d8a68464e92)`(String subscriptionJson)` | 
+`public void `[`requestEvents`](#class_nostr_relay_manager_1abbe5d58c9de03fa5d0b0ef8d65a8e05f)`(const `[`NostrRequestOptions`](#class_nostr_request_options)` * options)` | Queue an event request message to be sent to relays.
 `public void `[`setEventCallback`](#class_nostr_relay_manager_1aadc1eb331765ee4801c6f0b0a6ad77eb)`(const std::string & key,`[`EventCallbackFn`](#class_nostr_relay_manager_1a243e602247df139518bc792d602c8ca0)` callback)` | Specify a callback for a relay event type.
 `public void `[`performEventAction`](#class_nostr_relay_manager_1a4fb7716262f75b6c28f165b82c58320f)`(const std::string & key,const char * payload)` | Run a specified event callback.
 `public void `[`enqueueMessage`](#class_nostr_relay_manager_1abe3b960487e0db1ce5a5c0733e323f4e)`(const char item)` | Add a relay message to the queue.
@@ -179,10 +181,12 @@ set minimum number of relays and a timeout for this minimum threshold. After thi
 
 #### `public void `[`subscribe`](#class_nostr_relay_manager_1a0e3ea54ae22c0420b16b9d8a68464e92)`(String subscriptionJson)` 
 
-Subscribe to a relay event. Currently a proxy for broadcast TODO: Add parameters for easier subscriptions.
+#### `public void `[`requestEvents`](#class_nostr_relay_manager_1abbe5d58c9de03fa5d0b0ef8d65a8e05f)`(const `[`NostrRequestOptions`](#class_nostr_request_options)` * options)` 
+
+Queue an event request message to be sent to relays.
 
 #### Parameters
-* `subscriptionJson`
+* `options` A [NostrRequestOptions](#class_nostr_request_options) object with arguments for the requested event(s)
 
 #### `public void `[`setEventCallback`](#class_nostr_relay_manager_1aadc1eb331765ee4801c6f0b0a6ad77eb)`(const std::string & key,`[`EventCallbackFn`](#class_nostr_relay_manager_1a243e602247df139518bc792d602c8ca0)` callback)` 
 
@@ -271,6 +275,65 @@ String
 #### `typedef `[`EventCallbackFn`](#class_nostr_relay_manager_1a243e602247df139518bc792d602c8ca0) 
 
 #### `typedef `[`EventCallbackMap`](#class_nostr_relay_manager_1a35c0886b3f7605dea0f2ab808e7ce9c1) 
+
+# class `NostrRequestOptions` 
+
+## Summary
+
+ Members                        | Descriptions                                
+--------------------------------|---------------------------------------------
+`public String * `[`ids`](#class_nostr_request_options_1acad33925661846a10c5c2c10200a7a9b) | 
+`public int `[`ids_count`](#class_nostr_request_options_1aa47e9cd3fcb9a4d2bf66612356707c5f) | 
+`public String * `[`authors`](#class_nostr_request_options_1abbfa201eb2cb991ee595d4c3c9253fd8) | 
+`public int `[`authors_count`](#class_nostr_request_options_1a3397447518bcac69e972f194f95cc60e) | 
+`public int * `[`kinds`](#class_nostr_request_options_1a6776ecad8f4d5a932f963fb8376ea370) | 
+`public int `[`kinds_count`](#class_nostr_request_options_1a150e8fa85851bbbf3a4c5b89903ee32a) | 
+`public String * `[`e`](#class_nostr_request_options_1a4478dbd80b76ab70e00525b390072191) | 
+`public int `[`e_count`](#class_nostr_request_options_1a00a4bf5b3f72c86c82c872038c7451e8) | 
+`public String * `[`p`](#class_nostr_request_options_1a32dbdf2fb312b6ebfa36921b533a879f) | 
+`public int `[`p_count`](#class_nostr_request_options_1a41daf6ba34d4dcc6f93a0e4dc5b3cd51) | 
+`public long `[`since`](#class_nostr_request_options_1ad23aa537a34190acc4e160d4fc41f9de) | 
+`public long `[`until`](#class_nostr_request_options_1a434c87b8ca0549c31e6352ddec97d313) | 
+`public int `[`limit`](#class_nostr_request_options_1a49d5e298a67dcae41b8d87ae71c6c130) | 
+`public String `[`toJson`](#class_nostr_request_options_1a029c3e7ce3b791de99e94f4b69961ef7)`() const` | serialise a [NostrRequestOptions](#class_nostr_request_options) object to a JSON string
+`public  `[`NostrRequestOptions`](#class_nostr_request_options_1a5ed1c37c7baafad58f894f6d126246e4)`()` | 
+
+## Members
+
+#### `public String * `[`ids`](#class_nostr_request_options_1acad33925661846a10c5c2c10200a7a9b) 
+
+#### `public int `[`ids_count`](#class_nostr_request_options_1aa47e9cd3fcb9a4d2bf66612356707c5f) 
+
+#### `public String * `[`authors`](#class_nostr_request_options_1abbfa201eb2cb991ee595d4c3c9253fd8) 
+
+#### `public int `[`authors_count`](#class_nostr_request_options_1a3397447518bcac69e972f194f95cc60e) 
+
+#### `public int * `[`kinds`](#class_nostr_request_options_1a6776ecad8f4d5a932f963fb8376ea370) 
+
+#### `public int `[`kinds_count`](#class_nostr_request_options_1a150e8fa85851bbbf3a4c5b89903ee32a) 
+
+#### `public String * `[`e`](#class_nostr_request_options_1a4478dbd80b76ab70e00525b390072191) 
+
+#### `public int `[`e_count`](#class_nostr_request_options_1a00a4bf5b3f72c86c82c872038c7451e8) 
+
+#### `public String * `[`p`](#class_nostr_request_options_1a32dbdf2fb312b6ebfa36921b533a879f) 
+
+#### `public int `[`p_count`](#class_nostr_request_options_1a41daf6ba34d4dcc6f93a0e4dc5b3cd51) 
+
+#### `public long `[`since`](#class_nostr_request_options_1ad23aa537a34190acc4e160d4fc41f9de) 
+
+#### `public long `[`until`](#class_nostr_request_options_1a434c87b8ca0549c31e6352ddec97d313) 
+
+#### `public int `[`limit`](#class_nostr_request_options_1a49d5e298a67dcae41b8d87ae71c6c130) 
+
+#### `public String `[`toJson`](#class_nostr_request_options_1a029c3e7ce3b791de99e94f4b69961ef7)`() const` 
+
+serialise a [NostrRequestOptions](#class_nostr_request_options) object to a JSON string
+
+#### Returns
+String
+
+#### `public  `[`NostrRequestOptions`](#class_nostr_request_options_1a5ed1c37c7baafad58f894f6d126246e4)`()` 
 
 # struct `AES_ctx` 
 
