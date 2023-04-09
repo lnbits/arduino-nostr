@@ -296,7 +296,7 @@ String
 `public long `[`until`](#class_nostr_request_options_1a434c87b8ca0549c31e6352ddec97d313) | 
 `public int `[`limit`](#class_nostr_request_options_1a49d5e298a67dcae41b8d87ae71c6c130) | 
 `public String `[`toJson`](#class_nostr_request_options_1a029c3e7ce3b791de99e94f4b69961ef7)`() const` | serialise a [NostrRequestOptions](#class_nostr_request_options) object to a JSON string
-`public  `[`NostrRequestOptions`](#class_nostr_request_options_1a5ed1c37c7baafad58f894f6d126246e4)`()` | 
+`public  `[`NostrRequestOptions`](#class_nostr_request_options_1a5ed1c37c7baafad58f894f6d126246e4)`()` | Constructs a new [NostrRequestOptions](#class_nostr_request_options) object with default values.
 
 ## Members
 
@@ -334,6 +334,37 @@ serialise a [NostrRequestOptions](#class_nostr_request_options) object to a JSON
 String
 
 #### `public  `[`NostrRequestOptions`](#class_nostr_request_options_1a5ed1c37c7baafad58f894f6d126246e4)`()` 
+
+Constructs a new [NostrRequestOptions](#class_nostr_request_options) object with default values.
+
+Initializes the [NostrRequestOptions](#class_nostr_request_options) object with default values for all its members. This constructor takes no arguments.
+
+#### Parameters
+* `ids` Pointer to an array of ids, defaults to nullptr. 
+
+* `ids_count` Number of ids in the ids array, defaults to 0. 
+
+* `authors` Pointer to an array of authors, defaults to nullptr. 
+
+* `authors_count` Number of authors in the authors array, defaults to 0. 
+
+* `kinds` Pointer to an array of kinds, defaults to nullptr. 
+
+* `kinds_count` Number of kinds in the kinds array, defaults to 0. 
+
+* `e` Pointer to an array of events, defaults to nullptr. 
+
+* `e_count` Number of events in the e array, defaults to 0. 
+
+* `p` Pointer to an array of pointers, defaults to nullptr. 
+
+* `p_count` Number of pointers in the p array, defaults to 0. 
+
+* `since` The starting timestamp for the request, defaults to -1. 
+
+* `until` The ending timestamp for the request, defaults to -1. 
+
+* `limit` The maximum number of results to return, defaults to -1.
 
 # struct `AES_ctx` 
 
