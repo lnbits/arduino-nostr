@@ -24,7 +24,7 @@
     "version": "0.1.8",
     "dependencies": {
         "ArduinoJson": "^6.21.1",
-        "uBitcoin": "^0.2.0",
+        "uBitcoin": "^0.1.2",
         "WebSockets": "^2.3.5"
     }
 }
