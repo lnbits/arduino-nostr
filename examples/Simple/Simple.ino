@@ -91,12 +91,11 @@ void setup() {
 
     nostrRelayManager.connect();
 
-    String subscriptionString = "[\"REQ\", \"" + nostrRelayManager.getNewSubscriptionId() + "\", {\"authors\": [\"d0bfc94bd4324f7df2a7601c4177209828047c4d3904d64009a3c67fb5d5e7ca\"], \"kinds\": [1], \"limit\": 1}]";
-    nostrRelayManager.enqueueMessage(subscriptionString.c_str());
+    // Send a basic note
+    String noteString = nostr.getNote(nsecHex, npubHex, timestamp, "Running NIP01!");
+    nostrRelayManager.enqueueMessage(noteString.c_str());
 
-    subscriptionString = "[\"REQ\", \"" + nostrRelayManager.getNewSubscriptionId() + "\", {\"#p\": [\"d0bfc94bd4324f7df2a7601c4177209828047c4d3904d64009a3c67fb5d5e7ca\"], \"kinds\": [4], \"limit\": 1}]";
-    nostrRelayManager.enqueueMessage(subscriptionString.c_str());
-
+    // send an encrypted dm to the defined npub
     subscriptionString = nostr.getEncryptedDm(nsecHex, npubHex, testRecipientPubKeyHex, timestamp, "Running NIP04!");
     nostrRelayManager.enqueueMessage(subscriptionString.c_str());
 }
