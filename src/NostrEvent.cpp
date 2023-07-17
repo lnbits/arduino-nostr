@@ -58,7 +58,7 @@ void NostrEvent::setLogging(bool loggingEnabled) {
  * @return String 
  */
 String NostrEvent::getNote(char const *privateKeyHex, char const *pubKeyHex, unsigned long timestamp, String content) {
-    StaticJsonDocument<200> doc;
+    StaticJsonDocument<1024> doc;
     JsonArray data = doc.createNestedArray("data");
     data.add(0);
     data.add(pubKeyHex);
@@ -71,6 +71,7 @@ String NostrEvent::getNote(char const *privateKeyHex, char const *pubKeyHex, uns
     String message;
     serializeJson(doc["data"], message);
     _logToSerialWithTitle("message is: ", String(message));
+    doc.clear();
 
     // sha256 of message converted to hex, assign to msghash
     byte hash[64] = { 0 }; // hash
@@ -104,7 +105,7 @@ String NostrEvent::getNote(char const *privateKeyHex, char const *pubKeyHex, uns
     }
 
     // Generate the JSON object ready for broadcasting
-    DynamicJsonDocument fullEvent(1024);
+    DynamicJsonDocument fullEvent(2048);
     fullEvent["id"] = msgHash;
     fullEvent["pubkey"] = pubKeyHex;
     fullEvent["created_at"] = timestamp;
@@ -118,6 +119,7 @@ String NostrEvent::getNote(char const *privateKeyHex, char const *pubKeyHex, uns
     serializeJson(fullEvent, json);
 
     String serialisedEventData = "[\"EVENT\"," + json + "]";
+    doc.clear();
     // Print the JSON to the serial monitor
     _logToSerialWithTitle("Event JSON", serialisedEventData);
     return serialisedEventData;
