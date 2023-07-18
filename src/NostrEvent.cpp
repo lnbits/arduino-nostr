@@ -58,7 +58,7 @@ void NostrEvent::setLogging(bool loggingEnabled) {
  * @return String 
  */
 String NostrEvent::getNote(char const *privateKeyHex, char const *pubKeyHex, unsigned long timestamp, String content) {
-    StaticJsonDocument<1024> doc;
+    StaticJsonDocument<2048> doc;
     JsonArray data = doc.createNestedArray("data");
     data.add(0);
     data.add(pubKeyHex);
