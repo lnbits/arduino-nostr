@@ -10,7 +10,7 @@
 class NostrQueueProcessor {
 public:
     static const size_t MAX_QUEUE_SIZE = 5;
-    static const size_t MAX_ITEM_SIZE = 1024;
+    static const size_t MAX_ITEM_SIZE = 2048;
 
     NostrQueueProcessor();
 
