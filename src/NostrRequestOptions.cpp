@@ -73,6 +73,7 @@ String NostrRequestOptions::toJson() const {
 
   if (p) {
     JsonArray pArray = json.createNestedArray("#p");
+
     for (int i = 0; i < p_count; i++) {
       pArray.add(p[i]);
     }
