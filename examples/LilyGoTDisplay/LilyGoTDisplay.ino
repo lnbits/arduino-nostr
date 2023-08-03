@@ -4,6 +4,7 @@
 #include <NostrEvent.h>
 #include <NostrRelayManager.h>
 #include <TFT_eSPI.h>
+#include <vector>
 
 const char* ssid     = "<SSID>"; // wifi SSID here
 const char* password = "<PASSWORD>"; // wifi password here
@@ -94,32 +95,31 @@ void setup() {
 
   long timestamp = getUnixTimestamp();
 
-    const char *const relays[] = {
-      "relay.damus.io",
-      "nostr.mom",
-      "relay.nostr.bg"
+  std::vector<String> relays = {
+    "relay.damus.io",
+    "nostr.mom",
+    "relay.nostr.bg"
   };
-    int relayCount = sizeof(relays) / sizeof(relays[0]);
     
-    nostr.setLogging(false);
-    nostrRelayManager.setRelays(relays, relayCount);
-    nostrRelayManager.setMinRelaysAndTimeout(2,10000);
+  nostr.setLogging(false);
+  nostrRelayManager.setRelays(relays);
+  nostrRelayManager.setMinRelaysAndTimeout(2,10000);
 
-    // Set some event specific callbacks here
-    nostrRelayManager.setEventCallback("ok", okEvent);
-    nostrRelayManager.setEventCallback("nip01", nip01Event);
-    nostrRelayManager.setEventCallback("nip04", nip04Event);
+  // Set some event specific callbacks here
+  nostrRelayManager.setEventCallback("ok", okEvent);
+  nostrRelayManager.setEventCallback("nip01", nip01Event);
+  nostrRelayManager.setEventCallback("nip04", nip04Event);
 
-    nostrRelayManager.connect();
+  nostrRelayManager.connect();
 
-    String subscriptionString = "[\"REQ\", \"" + nostrRelayManager.getNewSubscriptionId() + "\", {\"authors\": [\"d0bfc94bd4324f7df2a7601c4177209828047c4d3904d64009a3c67fb5d5e7ca\"], \"kinds\": [1], \"limit\": 1}]";
-    nostrRelayManager.enqueueMessage(subscriptionString.c_str());
+  String subscriptionString = "[\"REQ\", \"" + nostrRelayManager.getNewSubscriptionId() + "\", {\"authors\": [\"d0bfc94bd4324f7df2a7601c4177209828047c4d3904d64009a3c67fb5d5e7ca\"], \"kinds\": [1], \"limit\": 1}]";
+  nostrRelayManager.enqueueMessage(subscriptionString.c_str());
 
-    subscriptionString = "[\"REQ\", \"" + nostrRelayManager.getNewSubscriptionId() + "\", {\"#p\": [\"d0bfc94bd4324f7df2a7601c4177209828047c4d3904d64009a3c67fb5d5e7ca\"], \"kinds\": [4], \"limit\": 1}]";
-    nostrRelayManager.enqueueMessage(subscriptionString.c_str());
+  subscriptionString = "[\"REQ\", \"" + nostrRelayManager.getNewSubscriptionId() + "\", {\"#p\": [\"d0bfc94bd4324f7df2a7601c4177209828047c4d3904d64009a3c67fb5d5e7ca\"], \"kinds\": [4], \"limit\": 1}]";
+  nostrRelayManager.enqueueMessage(subscriptionString.c_str());
 
-    subscriptionString = nostr.getEncryptedDm(nsecHex, npubHex, testRecipientPubKeyHex, timestamp, "Running NIP04!");
-    nostrRelayManager.enqueueMessage(subscriptionString.c_str());
+  subscriptionString = nostr.getEncryptedDm(nsecHex, npubHex, testRecipientPubKeyHex, timestamp, "Running NIP04!");
+  nostrRelayManager.enqueueMessage(subscriptionString.c_str());
 }
 
 void loop() {

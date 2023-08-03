@@ -7,6 +7,7 @@
 #include "time.h"
 #include <NostrEvent.h>
 #include <NostrRelayManager.h>
+#include <vector>
 
 const char* ssid     = "wubwub"; // wifi SSID here
 const char* password = "blob19750405blob"; // wifi password here
@@ -77,23 +78,22 @@ void setup() {
 
   long timestamp = getUnixTimestamp();
 
-    const char *const relays[] = {
-      "relay.damus.io",
-      "nostr.mom",
-      "relay.nostr.bg"
+  std::vector<String> relays = {
+    "relay.damus.io",
+    "nostr.mom",
+    "relay.nostr.bg"
   };
-    int relayCount = sizeof(relays) / sizeof(relays[0]);
-    
-    nostr.setLogging(false);
-    nostrRelayManager.setRelays(relays, relayCount);
-    nostrRelayManager.setMinRelaysAndTimeout(2,10000);
+  
+  nostr.setLogging(false);
+  nostrRelayManager.setRelays(relays);
+  nostrRelayManager.setMinRelaysAndTimeout(2,10000);
 
-    // Set some event specific callbacks here
-    nostrRelayManager.setEventCallback("ok", okEvent);
-    nostrRelayManager.setEventCallback("nip01", nip01Event);
-    nostrRelayManager.setEventCallback("nip04", nip04Event);
+  // Set some event specific callbacks here
+  nostrRelayManager.setEventCallback("ok", okEvent);
+  nostrRelayManager.setEventCallback(1, nip01Event);
+  nostrRelayManager.setEventCallback(4, nip04Event);
 
-    nostrRelayManager.connect();
+  nostrRelayManager.connect();
 
 NostrRequestOptions* eventRequestOptions = new NostrRequestOptions();
 
