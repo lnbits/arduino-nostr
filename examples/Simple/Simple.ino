@@ -3,9 +3,10 @@
 #include "time.h"
 #include <NostrEvent.h>
 #include <NostrRelayManager.h>
+#include <vector>
 
-const char* ssid     = "wubwub"; // wifi SSID here
-const char* password = "blob19750405blob"; // wifi password here
+const char* ssid     = "<SSIDHERE>"; // wifi SSID here
+const char* password = "<PASSWORDHERE>"; // wifi password here
 
 NostrEvent nostr;
 NostrRelayManager nostrRelayManager;
@@ -73,31 +74,30 @@ void setup() {
 
   long timestamp = getUnixTimestamp();
 
-    const char *const relays[] = {
-      "relay.damus.io",
-      "nostr.mom",
-      "relay.nostr.bg"
+  std::vector<String> relays = {
+    "relay.damus.io",
+    "nostr.mom",
+    "relay.nostr.bg"
   };
-    int relayCount = sizeof(relays) / sizeof(relays[0]);
-    
-    nostr.setLogging(false);
-    nostrRelayManager.setRelays(relays, relayCount);
-    nostrRelayManager.setMinRelaysAndTimeout(2,10000);
 
-    // Set some event specific callbacks here
-    nostrRelayManager.setEventCallback("ok", okEvent);
-    nostrRelayManager.setEventCallback("nip01", nip01Event);
-    nostrRelayManager.setEventCallback("nip04", nip04Event);
+  nostr.setLogging(false);
+  nostrRelayManager.setRelays(relays);
+  nostrRelayManager.setMinRelaysAndTimeout(2,10000);
 
-    nostrRelayManager.connect();
+  // Set some event specific callbacks here
+  nostrRelayManager.setEventCallback("ok", okEvent);
+  nostrRelayManager.setEventCallback("nip01", nip01Event);
+  nostrRelayManager.setEventCallback("nip04", nip04Event);
 
-    // Send a basic note
-    String noteString = nostr.getNote(nsecHex, npubHex, timestamp, "Running NIP01!");
-    nostrRelayManager.enqueueMessage(noteString.c_str());
+  nostrRelayManager.connect();
 
-    // send an encrypted dm to the defined npub
-    subscriptionString = nostr.getEncryptedDm(nsecHex, npubHex, testRecipientPubKeyHex, timestamp, "Running NIP04!");
-    nostrRelayManager.enqueueMessage(subscriptionString.c_str());
+  // Send a basic note
+  String noteString = nostr.getNote(nsecHex, npubHex, timestamp, "Running NIP01!");
+  nostrRelayManager.enqueueMessage(noteString.c_str());
+
+  // send an encrypted dm to the defined npub
+  String subscriptionString = nostr.getEncryptedDm(nsecHex, npubHex, testRecipientPubKeyHex, timestamp, "Running NIP04!");
+  nostrRelayManager.enqueueMessage(subscriptionString.c_str());
 }
 
 void loop() {

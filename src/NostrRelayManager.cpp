@@ -7,6 +7,7 @@
 #include <NostrEvent.h>
 #include <WebSocketsClient.h>
 #include "ArduinoJson.h"
+#include <vector>
 
 /**
  * @brief Construct a new Nostr Relay Manager:: Nostr Relay Manager object
@@ -15,23 +16,28 @@
 NostrRelayManager::NostrRelayManager() : 
     lastBroadcastAttempt(0),
     minRelaysTimeout(15000),
-    minRelays(1) {
+    minRelays(1),
+    relays(std::vector<String>()) {
 }
 
 /**
  * @brief Specify a callback for a relay event type
  * 
- * @param key Can be "ok", "nip01", "nip04"
+ * @param key Can be "ok", "nip01", "nip04", "zapReceipt"
  * @param callback 
  */
 void NostrRelayManager::setEventCallback(const std::string& key, EventCallbackFn callback) {
     m_callbacks[key] = callback;
 }
 
+void NostrRelayManager::setEventCallback(const int key, EventCallbackFn callback) {
+    m_callbacks[std::to_string(key)] = callback;
+}
+
 /**
  * @brief Run a specified event callback
  * 
- * @param key Can be "ok", "nip01", "nip04"
+ * @param key Can be "ok", "nip01", "nip04", "zapReceipt"
  * @param payload 
  */
 void NostrRelayManager::performEventAction(const std::string& key, const char* payload) {
@@ -80,9 +86,8 @@ void NostrRelayManager::requestEvents(const NostrRequestOptions* options) {
  * @param new_relays 
  * @param size 
  */
-void NostrRelayManager::setRelays(const char *const new_relays[], int size) {
-    relays = new_relays;
-    relay_count = size;
+void NostrRelayManager::setRelays(const std::vector<String>& new_relays) {
+    relays.assign(new_relays.begin(), new_relays.end());
 }
 
 /**
@@ -90,8 +95,22 @@ void NostrRelayManager::setRelays(const char *const new_relays[], int size) {
 * 
 */
 void NostrRelayManager::loop() {
-    for (int i = 0; i < relay_count; i++) {
+    for (int i = 0; i < relays.size(); i++) {
         _webSocketClients[i].loop();
+    }
+}
+
+/**
+ * @brief broadcast message to one relay only, identified by it's URL
+ * 
+ * @param serializedEventJson 
+ * @param relayUrl 
+ */
+void NostrRelayManager::broadcastEventToRelay(String serializedEventJson, String relayUrl) {
+    Serial.println("Broadcasting event  " + serializedEventJson);
+    for (int i = 0; i < relays.size(); i++) {
+        _webSocketClients[i].sendTXT(serializedEventJson);
+        // delay(1000);
     }
 }
 
@@ -134,7 +153,7 @@ void NostrRelayManager::broadcastEvents() {
  */
 int NostrRelayManager::connectedRelayCount() {
     int count = 0;
-    for (int i = 0; i < relay_count; i++) {
+    for (int i = 0; i < relays.size(); i++) {
         if (_webSocketClients[i].isConnected()) {
             count++;
         }
@@ -161,7 +180,7 @@ void NostrRelayManager::setMinRelaysAndTimeout(int minRelays, unsigned long minR
  * @param index 
  */
 void NostrRelayManager::printRelay(int index) const {
-    if (index >= 0 && index < relay_count) {
+    if (index >= 0 && index < relays.size()) {
         Serial.println("Relay is " + String(relays[index]));
     } else {
         Serial.println("Invalid index.");
@@ -175,8 +194,23 @@ void NostrRelayManager::printRelay(int index) const {
  */
 void NostrRelayManager::connect(std::function<void(WStype_t, uint8_t*, size_t)> callback) {
     // Initialize WebSocket connections
-    for (int i = 0; i < relay_count; i++) {
-        _webSocketClients[i].beginSSL(relays[i], 443);
+    // serial print all relays
+    Serial.println("Relays are:");
+    for (int i = 0; i < relays.size(); i++) {
+        Serial.println(relays[i]);
+    }
+    for (int i = 0; i < relays.size(); i++) {
+        // if the relay includes a "/" split on the first / and use the first part as the host and the second part as the path
+        if(String(relays[i]).indexOf("/") > 0) {
+            String host = String(relays[i]).substring(0, String(relays[i]).indexOf("/"));
+            String path = String(relays[i]).substring(String(relays[i]).indexOf("/"));
+            Serial.println("Connecting to relay: " + host + " with path: " + path);
+            _webSocketClients[i].beginSSL(host, 443, path);
+        } else {
+            Serial.println("Connecting to relay: " + String(relays[i]));
+            _webSocketClients[i].beginSSL(relays[i], 443);
+        }
+        _webSocketClients[i].setReconnectInterval(5000);
         _webSocketClients[i].onEvent([this, callback, i](WStype_t type, uint8_t* payload, size_t length) {
             this->_webSocketEvent(type, payload, length, i);
 
@@ -193,7 +227,7 @@ void NostrRelayManager::connect(std::function<void(WStype_t, uint8_t*, size_t)> 
  * 
  */
 void NostrRelayManager::disconnect() {
-    for (int i = 0; i < relay_count; i++) {
+    for (int i = 0; i < relays.size(); i++) {
         _webSocketClients[i].disconnect();
         delay(1000);
     }
@@ -205,7 +239,7 @@ void NostrRelayManager::disconnect() {
  * @param serializedEventJson 
  */
 void NostrRelayManager::broadcastEvent(String serializedEventJson) {
-    for (int i = 0; i < relay_count; i++) {
+    for (int i = 0; i < relays.size(); i++) {
         _webSocketClients[i].sendTXT(serializedEventJson);
         delay(1000);
     }
@@ -227,6 +261,8 @@ String NostrRelayManager::getNewSubscriptionId() {
 return result;
 }
 
+
+
 /**
  * @brief Generic websocket event callback
  * 
@@ -236,25 +272,56 @@ return result;
  * @param relayIndex 
  */
 void NostrRelayManager::_webSocketEvent(WStype_t type, uint8_t* payload, size_t length, int relayIndex) {
-    Serial.println("Message from relay index:" + String(relayIndex));
+  Serial.println("Message from relay index:" + String(relayIndex));
   switch (type) {
     case WStype_DISCONNECTED:
         Serial.printf("[WSc] Disconnected from relay: %s\n", ".");
+        performEventAction("disconnected", relays[relayIndex].c_str());
         break;
     case WStype_CONNECTED:
         Serial.printf("[WSc] Connected to relay: %s\n", ".");
+        performEventAction("connected", "message");
     break;
     case WStype_TEXT:
     {
         Serial.printf("[WSc]: Received text from relay %s: %s\n", ".", payload);
         const char *payloadStr = (char *)payload;
 
-        if (String(payloadStr).indexOf("\"OK\"") > 0) {
+        // if the string is a JSON string, convert it to a JSON object
+        if (String(payloadStr).indexOf("[") == 0) {
+            StaticJsonDocument<4096> doc;
+            DeserializationError error = deserializeJson(doc, payloadStr);
+            if (error) {
+                Serial.print(F("deserializeJson() failed: "));
+                Serial.println(error.c_str());
+                return;
+            }
+            // get kind int from kind = doc[2]["kind"]; and handle exceptions
+            
+            
+
+            int kind = 0;
+
+            try {
+                kind = doc[2]["kind"];
+                try {
+                    performEventAction(std::to_string(kind), payloadStr);
+                } catch (const std::out_of_range& oor) {
+                    Serial.println("No callback for event kind: " + String(kind));
+                }
+            }
+            catch (const std::out_of_range& oor) {
+                Serial.println("No kind in JSON string, not doing anything.");
+                return;
+            }
+                
+                
+            doc.clear();
+        } else if (String(payloadStr).indexOf("\"OK\"") > 0) {
             performEventAction("ok", payloadStr);
-        } else if (String(payloadStr).indexOf("\"EVENT\"") > 0 && String(payloadStr).indexOf("\"kind\":1") > 0) {
-            performEventAction("nip01", payloadStr);
-        } else if (String(payloadStr).indexOf("\"EVENT\"") > 0 && String(payloadStr).indexOf("\"kind\":4") > 0) {
-            performEventAction("nip04", payloadStr);
+        } else {
+            Serial.println("Received text from relay: " + String(payloadStr));
+            Serial.println("Not a JSON string, not an OK string, not doing anything.");
         }
         break;
     }
