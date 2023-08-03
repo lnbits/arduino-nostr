@@ -21,7 +21,7 @@
         "type": "git",
         "url": "https://github.com/lnbits/arduino-nostr"
     },
-    "version": "0.1.12",
+    "version": "0.2.0",
     "dependencies": {
         "ArduinoJson": "^6.21.1",
         "uBitcoin": "^0.2.0",
