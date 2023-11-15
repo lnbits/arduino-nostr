@@ -119,11 +119,11 @@ void NostrRelayManager::broadcastEventToRelay(String serializedEventJson, String
  * 
  */
 void NostrRelayManager::broadcastEvents() {
-
-  unsigned long currentMillis = millis();
   if (m_queue.isEmpty()) {
     return;
   }
+
+  unsigned long currentMillis = millis();
 
   if (connectedRelayCount() >= minRelays && currentMillis - lastBroadcastAttempt <= minRelaysTimeout) {
     // Broadcast all queued events to connected relays
