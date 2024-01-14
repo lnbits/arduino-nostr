@@ -86,8 +86,8 @@ void setup() {
 
   // Set some event specific callbacks here
   nostrRelayManager.setEventCallback("ok", okEvent);
-  nostrRelayManager.setEventCallback("nip01", nip01Event);
-  nostrRelayManager.setEventCallback("nip04", nip04Event);
+  nostrRelayManager.setEventCallback(1, nip01Event);
+  nostrRelayManager.setEventCallback(4, nip04Event);
 
   nostrRelayManager.connect();
 
